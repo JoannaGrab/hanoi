@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Hanoi</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+
+    <body>
+        <div class="container">
+            <h2 class="container-item container-header">Tower of Hanoi</h2>
+            
+            <div class="container-item container-settings">
+                <label for='discs'>Discs:</label>
+                <select id='discs' name='discs'>
+                    <option value="" selected disabled hidden>Choose</option>
+                    <option value='2'>2</option>
+                    <option value='3'>3</option>
+                    <option value='4'>4</option>
+                    <option value='5'>5</option>
+                </select>
+                <button id="playButton" class="button">Play</button>
+            </div>
+
+            <div class="container-item container-body">
+                <div class="hanoi-peg">
+                    <div class="peg-label">from</div>
+                    <div class="peg-content">
+                        <ul class="peg-content-list" id="from-peg"></ul>
+                    </div>
+                    <div class="peg-base"></div>
+                </div>
+
+                <div class="hanoi-peg">
+                    <div class="peg-label">spare</div>
+                    <div class="peg-content">
+                        <ul class="peg-content-list" id="spare-peg"></ul>
+                    </div>
+                    <div class="peg-base"></div>
+                </div>
+
+                <div class="hanoi-peg">
+                    <div class="peg-label">to</div>
+                    <div class="peg-content">
+                        <ul class="peg-content-list" id="to-peg"></ul>
+                    </div>
+                    <div class="peg-base"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <script src="hanoi.js"></script>
+    </body>
+</html>

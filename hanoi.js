@@ -1,107 +1,86 @@
-var from = [],
-    spare = [],
-    to = [],
-    numberOfDiscs;
-
-var fromPeg,
-    sparePeg,
-    toPeg;
-
+const refreshRate = 1000;
+let state;
+const sleep = ms => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
 // Take selected discs from user
 var discsHTML = document.getElementById("discs");
 
 // Set initial state of towers
-discsHTML.onclick = () => setInitialState();
+discsHTML.onclick = () => {
+    state = initialState(discsHTML.value);
+    drawTowers(state);
+};
 
 var playButton = document.getElementById("playButton");
-playButton.onclick = () => hanoiTower();
+playButton.onclick = async () => {
+    hanoiTower(async () => {
+        await sleep(refreshRate).then(v => null);
+        debugState(state, "mid");
+        drawTowers(state);
+    })
+};
 
 
-function hanoiTower() {
-    var moves = Math.pow(2, numberOfDiscs) - 1;
+async function hanoiTower(onMoveMade) {
+    var moves = Math.pow(2, state.numberOfDiscs) - 1;
 
-    console.log("before")
-    console.log(from)
-    console.log(spare)
-    console.log(to)
+    debugState(state, "before");
 
-    if (isEven(numberOfDiscs)) {
+    if (isEven(state.numberOfDiscs)) {
         while(moves >= 0){
-            makeLegalMove(from[from.length-1], spare[spare.length-1], from, spare);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.from[state.from.length-1], state.spare[state.spare.length-1], state.from, state.spare, onMoveMade);
             moves--;
             if (moves == 0) break;
-
-            makeLegalMove(from[from.length-1], to[to.length-1], from, to);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.from[state.from.length-1], state.to[state.to.length-1], state.from, state.to, onMoveMade);
             moves--;
             if (moves == 0) break;
-
-            makeLegalMove(spare[spare.length-1], to[to.length-1], spare, to);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.spare[state.spare.length-1], state.to[state.to.length-1], state.spare, state.to, onMoveMade);
             moves--;
             if (moves == 0) break;
         }
     }
     else {
         while(moves >= 0){
-            makeLegalMove(from[from.length-1], to[to.length-1], from, to);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.from[state.from.length-1], state.to[state.to.length-1], state.from, state.to, onMoveMade);
             moves--;
             if (moves == 0) break;
-
-            makeLegalMove(from[from.length-1], spare[spare.length-1], from, spare);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.from[state.from.length-1], state.spare[state.spare.length-1], state.from, state.spare, onMoveMade);
             moves--;
             if (moves == 0) break;
-
-            makeLegalMove(spare[spare.length-1], to[to.length-1], spare, to);
-            console.log("mid")
-            console.log(from)
-            console.log(spare)
-            console.log(to)
-            drawTowers(true);
+            await makeLegalMove(state.spare[state.spare.length-1], state.to[state.to.length-1], state.spare, state.to, onMoveMade);
             moves--;
             if (moves == 0) break;
         }
     }
 }
 
-
+function debugState(state, where){
+    console.log(where);
+    console.log(state.from);
+    console.log(state.spare);
+    console.log(state.to);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // INITIALIZE PEGS
-function setInitialState() {
-    from.length = 0;
-    spare.length = 0;
-    to.length = 0;
+function initialState(numberOfDiscs) {
+    state = {
+        from: initializePeg(numberOfDiscs),
+        spare: [],
+        to: [],
+        numberOfDiscs: numberOfDiscs,
+    };
+    return state;
+}
 
-    numberOfDiscs = discsHTML.value;
+function initializePeg(numberOfDiscs){
+    peg = [];
     for (let i = numberOfDiscs; i > 0; i--) {
-        from.push(+i);
+        peg.push(+i);
     }
-    drawTowers();
+    return peg;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,78 +91,39 @@ function isEven(number){
 
 ///////////////////////////////////////////////////////////////////////////////
 // MOVE DISCS
-function makeLegalMove(discOne, discTwo, pegOne, pegTwo){
-    if (discTwo === undefined) {
-        if (discOne !== undefined) {
-            pegTwo.push(pegOne.pop());
-            drawTowers(true);
-        }
+async function makeLegalMove(discOne, discTwo, pegOne, pegTwo,onMoveMade){
+    if (discTwo === undefined && discOne !== undefined) {
+        pegTwo.push(pegOne.pop());
     }
-    else if (discOne === undefined) {
-        if (discTwo !== undefined) {
-            pegOne.push(pegTwo.pop());
-            drawTowers(true);
-        }
+    else if (discOne === undefined && discTwo !== undefined) {
+        pegOne.push(pegTwo.pop());
+    }
+    else if (discOne > discTwo) {
+        pegOne.push(pegTwo.pop());
     }
     else {
-        if (discOne > discTwo) {
-            pegOne.push(pegTwo.pop());
-            drawTowers();
-        }
-        else {
-            pegTwo.push(pegOne.pop());
-            drawTowers(true);
-        }
+        pegTwo.push(pegOne.pop());
+    }
+    // TODO: check if func
+    if (onMoveMade) {
+        await onMoveMade();
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // DRAW TOWERS
-async function drawTowers(wait) {
-    if (wait) {
-        for (let i = 0; i < 1000; i++)
-        {
-            console.log("fed")
-        }
-    }
-    drawFromPeg();
-    drawSparePeg();
-    drawToPeg();
+function drawTowers(state) {
+    drawPeg("from-peg", state.from);
+    drawPeg("spare-peg", state.spare);
+    drawPeg("to-peg", state.to);
 }
 
-function drawFromPeg() {
-    fromPeg = document.getElementById("from-peg");
-    from.reverse()
-    fromPeg.innerHTML = "";
-    for (disc in from) {
+function drawPeg(peg, discs) {
+    peg = document.getElementById(peg);
+    peg.innerHTML = "";
+    for (let i = discs.length - 1; i >= 0; i--) {
         let li = document.createElement("li");
-        li.innerHTML = from[disc];
-        fromPeg.appendChild(li);
-        
+        li.innerHTML = discs[i];
+        peg.appendChild(li);
     }
-    from.reverse()
-}
-
-function drawSparePeg() {
-    sparePeg = document.getElementById("spare-peg");
-    spare.reverse()
-    sparePeg.innerHTML = "";
-    for (disc in spare) {
-        let li = document.createElement("li");
-        li.innerHTML = spare[disc];
-        sparePeg.appendChild(li);
-    }
-    spare.reverse()
-}
-
-function drawToPeg() {
-    toPeg = document.getElementById("to-peg");
-    to.reverse()
-    toPeg.innerHTML = "";
-    for (disc in to) {
-        let li = document.createElement("li");
-        li.innerHTML = to[disc];
-        toPeg.appendChild(li);
-    }
-    to.reverse()
 }
